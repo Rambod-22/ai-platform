@@ -1,4 +1,5 @@
 
+<<<<<<< HEAD
 ```
 
 ### Install packages
@@ -52,3 +53,5 @@ Running commands with npm `npm run [command]`
 | command         | description                              |
 | :-------------- | :--------------------------------------- |
 | `dev`           | Starts a development instance of the app |
+=======
+>>>>>>> c6725fb25d7517624b14c08f2fde02465fa28682

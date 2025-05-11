@@ -50,6 +50,7 @@ export async function POST(
       prompt,
       n: parseInt(amount, 10),
       size: resolution,
+      response_format: "url" // optional but faster
     });
 
     if (!isPro) {

@@ -50,8 +50,7 @@ export async function POST(
 
     return NextResponse.json({ 
       id: prediction.id,
-      status: prediction.status,
-      urls: prediction.urls
+      status: prediction.status
     });
   } catch (error) {
     console.log('[MUSIC_ERROR]', error);

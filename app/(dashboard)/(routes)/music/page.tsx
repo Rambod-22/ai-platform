@@ -2,7 +2,7 @@
 
 import * as z from "zod";
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
@@ -16,6 +16,7 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Loader } from "@/components/loader";
 import { Empty } from "@/components/ui/empty";
 import { useProModal } from "@/hooks/use-pro-modal";
+import { useReplicatePrediction } from "@/hooks/use-replicate-prediction";
 
 import { formSchema } from "./constants";
 
@@ -23,6 +24,8 @@ const MusicPage = () => {
   const proModal = useProModal();
   const router = useRouter();
   const [music, setMusic] = useState<string>();
+  const [predictionId, setPredictionId] = useState<string | null>(null);
+  const { prediction, isLoading: isPredictionLoading } = useReplicatePrediction(predictionId);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -31,16 +34,26 @@ const MusicPage = () => {
     }
   });
 
-  const isLoading = form.formState.isSubmitting;
+  const isLoading = form.formState.isSubmitting || isPredictionLoading;
+
+  // Handle prediction completion
+  useEffect(() => {
+    if (prediction?.status === 'succeeded' && prediction.output) {
+      setMusic(prediction.output.audio);
+      toast.success("Music generated successfully!");
+    } else if (prediction?.status === 'failed') {
+      toast.error("Music generation failed. Please try again.");
+    }
+  }, [prediction]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setMusic(undefined);
+      setPredictionId(null);
 
       const response = await axios.post('/api/music', values);
-      console.log(response)
-
-      setMusic(response.data.audio);
+      setPredictionId(response.data.id);
+      
       form.reset();
     } catch (error: any) {
       if (error?.response?.status === 403) {
@@ -102,6 +115,13 @@ const MusicPage = () => {
         {isLoading && (
           <div className="p-20">
             <Loader />
+            {prediction && (
+              <p className="text-center text-sm text-muted-foreground mt-4">
+                Status: {prediction.status === 'starting' ? 'Initializing...' : 
+                        prediction.status === 'processing' ? 'Generating music...' : 
+                        'Processing...'}
+              </p>
+            )}
           </div>
         )}
         {!music && !isLoading && (

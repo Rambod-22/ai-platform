@@ -36,20 +36,23 @@ export async function POST(
       return new NextResponse("Free trial has expired. Please upgrade to pro.", { status: 403 });
     }
 
-    const response = await replicate.run(
-      "anotherjesse/zeroscope-v2-xl:71996d331e8ede8ef7bd76eba9fae076d31792e4ddf4ad057779b443d6aea62f",
-      {
-        input: {
-          prompt,
-        }
+    // Create prediction (async - returns immediately)
+    const prediction = await replicate.predictions.create({
+      version: "anotherjesse/zeroscope-v2-xl:71996d331e8ede8ef7bd76eba9fae076d31792e4ddf4ad057779b443d6aea62f",
+      input: {
+        prompt
       }
-    );
+    });
 
     if (!isPro) {
       await incrementApiLimit();
     }
 
-    return NextResponse.json(response);
+    return NextResponse.json({ 
+      id: prediction.id,
+      status: prediction.status,
+      urls: prediction.urls
+    });
   } catch (error) {
     console.log('[VIDEO_ERROR]', error);
     return new NextResponse("Internal Error", { status: 500 });

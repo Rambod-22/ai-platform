@@ -21,6 +21,10 @@ export async function POST(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    if (!process.env.REPLICATE_API_TOKEN) {
+      return new NextResponse("Replicate API Token not configured.", { status: 500 });
+    }
+
     if (!prompt) {
       return new NextResponse("Prompt is required", { status: 400 });
     }
